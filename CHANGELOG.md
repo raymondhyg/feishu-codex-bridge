@@ -1,16 +1,12 @@
-# Changelog
+# 更新日志
 
 ## v0.12.7 - 2026-09-01
 
-- Added Codex Desktop IPC wire-v2 delivery with a bounded v1 fallback only
-  after an explicit non-dispatch result.
-- Added exact-thread activation and one-retry recovery when the Desktop owner
-  is absent or exposes no compatible turn handler.
-- Made graceful stop idempotent when the bridge removes its PID during exit.
-- Added one external package for clean install, preserve-config upgrade, and
-  recoverable repair installation.
-- Added package allowlisting, extracted-package smoke tests, SHA256/manifest
-  read-back, and external-content privacy scanning.
-- Verified 117 automated tests before the open-source repository migration.
+- 支持 Codex Desktop IPC wire v2；只有 v2 明确返回未投递时，才允许有界回退到 v1。
+- 当 Desktop owner 不存在或没有兼容轮次处理器时，可按精确线程请求激活并最多重试一次。
+- 修复 Bridge 退出过程中自行删除 PID 文件时，优雅停止脚本可能失败的问题。
+- 一个外发包同时支持新安装、保留配置升级和可恢复修复安装。
+- 增加文件白名单、解压后冒烟测试、SHA256/manifest 读回和外发内容隐私扫描。
+- 开源迁移前自动化测试 117/117 通过。
 
-Receiving-device live acceptance remains separate from package verification.
+接收电脑的真实运行验收仍与发布包验证分开。

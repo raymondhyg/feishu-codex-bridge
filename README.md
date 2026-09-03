@@ -1,59 +1,55 @@
-# Feishu Codex Bridge
+# 飞书 Codex 桥
 
-An unofficial, Windows-focused bridge that transports authorized Feishu/Lark
-private messages to one exact, Desktop-visible local Codex controller and sends
-the correlated turn result back to the same conversation.
+这是一个非官方、面向 Windows 的轻量传输桥：把授权用户的飞书/Lark 私聊消息送入一个精确绑定、在 Codex Desktop 中可见的本地总控任务，再把对应轮次的结果回复到原会话。
 
-The bridge is deliberately **transport only**. It does not interpret business
-intent, select tasks by title, create a second AI, or route work by semantics.
+Bridge 坚持只做传输：不理解业务意图、不按标题选择任务、不创建第二个 AI，也不根据消息内容决定工作应该交给谁。
 
-## Data flow
+## 工作链路
 
 ```text
-authorized Feishu/Lark P2P message
-  -> identity check, deduplication, attachments, FIFO
-  -> one privately configured Codex thread ID and working directory
-  -> Desktop-visible Codex turn
-  -> correlated result
-  -> reply to the originating Feishu/Lark message
+授权用户的飞书/Lark 私聊
+  -> 身份校验、去重、附件处理、FIFO
+  -> 私下配置的精确 Codex 任务 ID 与工作目录
+  -> Desktop 可见的 Codex 轮次
+  -> 精确关联的轮次结果
+  -> 回复到原飞书/Lark 消息
 ```
 
-## Security model
+## 安全模型
 
-This project is intended for a single trusted operator and an allowlisted P2P
-entry. The bound Codex controller runs with a static unattended full-access
-profile. Do not expose the bot to groups, untrusted users, or a shared public
-application. Keep credentials, thread IDs, message bodies, logs, attachments,
-and runtime state outside the repository.
+本项目面向“单一可信使用者 + 白名单私聊入口”。绑定的 Codex 总控使用固定的无人值守全权限运行配置。
 
-Read [SECURITY.md](SECURITY.md) before installation.
+请不要：
 
-## Requirements
+- 把机器人开放给群聊或不可信用户；
+- 使用面向大量人员的公共飞书应用；
+- 把凭据、完整线程 ID、消息正文、日志、附件或运行状态提交到仓库。
 
-- Windows 10 or 11
+安装前请先阅读 [安全说明](SECURITY.md)。
+
+## 环境要求
+
+- Windows 10 或 Windows 11
 - Codex Desktop
 - Node.js LTS
-- Feishu/Lark CLI and the required official skills
-- A Feishu/Lark application configured for private-message events
+- 飞书/Lark CLI 与所需官方 Skills
+- 已配置私聊消息事件的飞书/Lark 应用
 
-## Install, upgrade, or repair
+## 安装、升级与修复
 
-Download the complete archive from GitHub Releases and verify its SHA256 and
-manifest before extracting the inner portable ZIP.
+请从 [GitHub Releases](https://github.com/raymondhyg/feishu-codex-bridge/releases) 下载完整总包。解压外层总包后，先核对 SHA256 和 manifest，再解压内层 portable ZIP。
 
-- New installation: follow [README-FIRST.md](README-FIRST.md).
-- Existing healthy installation:
+- 新电脑：阅读 [安装首读](README-FIRST.md)。
+- 已有正常安装：
   `scripts/upgrade-or-repair-existing-computer.ps1 -Mode Upgrade`
-- Existing modified or damaged installation:
+- 旧源码被大量修改、损坏或无法判断：
   `scripts/upgrade-or-repair-existing-computer.ps1 -Mode Repair`
 
-Upgrade and repair preserve the receiving device's private configuration and
-state, archive the previous public source, and install clean release source.
-They do not merge unknown local source edits.
+升级和修复会保留接收电脑上的私有配置与状态，备份旧公共源码，然后安装干净的 Release 源码；不会把未知的旧修改自动合并进新版。
 
-## Verification
+## 本地验证
 
-From `scripts`:
+进入 `scripts` 目录运行：
 
 ```powershell
 npm ci --ignore-scripts --no-audit --no-fund
@@ -63,25 +59,35 @@ npm run preflight
 .\health-check.ps1 -RequireClean -WaitSeconds 60
 ```
 
-Package verification is not device acceptance. Each receiving computer still
-needs a real private-message round trip and, when required, attachment,
-resource-readback, FIFO, recovery, and physical-restart acceptance.
+发布包验证通过，不等于接收电脑已经验收通过。每台电脑仍需完成一次真实私聊往返；按实际需要分别验收附件、文档/任务/妙记读回、FIFO、中断恢复和物理重启。
 
-## Scope
+## 功能范围
 
-Included: P2P text, image/file input, exact-thread binding, deduplication,
-FIFO, recovery, hidden startup, one-consumer health, and sanitized diagnostics.
+包含：
 
-Not included: group routing, raw IM voice recognition, semantic task routing,
-remote job management, confirmation codes, or a second reasoning agent inside
-the bridge.
+- 私聊文字、图片和文件输入；
+- 精确线程绑定；
+- 去重、FIFO 和精确轮次关联；
+- 固定总控未激活时的有界恢复；
+- Windows 隐藏启动；
+- 单消费者健康检查和脱敏诊断；
+- 新安装、保留配置升级和可恢复修复。
 
-## Project status
+不包含：
 
-Current release line: **v0.12.7**. See [CHANGELOG.md](CHANGELOG.md) and the
-release assets for exact evidence. This project is not affiliated with or
-endorsed by ByteDance, Feishu/Lark, or OpenAI.
+- 群聊路由；
+- 飞书 IM 原始语音识别；
+- 按语义选择任务；
+- 远程任务系统；
+- 确认码、任务码；
+- Bridge 内部的第二个思考智能体。
 
-## License
+## 当前版本
 
-MIT. See [LICENSE](LICENSE) and [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
+当前公开版本：**v0.12.7**。准确变更和验证证据见 [更新日志](CHANGELOG.md) 与 Release 附件。
+
+本项目与字节跳动、飞书/Lark 或 OpenAI 不存在隶属、联合或官方背书关系。
+
+## 许可证
+
+本项目使用 MIT License。参见 [LICENSE](LICENSE) 和 [第三方声明](THIRD_PARTY_NOTICES.md)。

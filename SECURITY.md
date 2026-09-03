@@ -1,36 +1,34 @@
-# Security Policy
+# 安全说明
 
-## Supported versions
+## 支持版本
 
-Security fixes are applied to the latest published release only.
+安全修复只应用于最新公开版本。
 
-## Deployment boundary
+## 部署边界
 
-This bridge is designed for one trusted operator, one allowlisted Feishu/Lark
-P2P identity, and one exact local Codex controller binding. The controller uses
-an unattended full-access execution profile. Deploying it for untrusted users,
-group chats, or a broadly shared application is outside the supported model.
+本 Bridge 只支持一个可信使用者、一个白名单飞书/Lark 私聊身份，以及一个精确绑定的本地 Codex 总控。该总控使用无人值守全权限运行配置。
 
-Never commit or attach:
+把它开放给不可信用户、群聊或大范围共享应用，不属于受支持的安全模型。
 
-- app secrets, tokens, cookies, OAuth material, or recovery credentials;
-- complete user, chat, message, or Codex thread IDs;
-- private configuration, state, logs, attachments, or message bodies;
-- machine-specific runtime paths containing a real Windows username.
+严禁提交或上传：
 
-Private runtime belongs under
-`%USERPROFILE%\.codex\private\lark-im-codex-bridge` and is excluded from the
-release package.
+- 应用密钥、token、cookie、OAuth 材料或恢复凭据；
+- 完整的用户、会话、消息或 Codex 线程 ID；
+- 私有配置、状态、日志、附件或消息正文；
+- 包含真实 Windows 用户名的设备运行路径。
 
-## Reporting a vulnerability
+私有运行数据应保存在：
 
-Do not open a public issue containing exploit details or private data. Use the
-repository's GitHub private vulnerability reporting feature. Include the
-affected version, reproduction conditions, impact, and the smallest redacted
-evidence needed to validate the report.
+```text
+%USERPROFILE%\.codex\private\lark-im-codex-bridge
+```
 
-## Acceptance boundary
+这些内容不应进入仓库或 Release 包。
 
-Passing source tests or package checks does not prove a receiving device is
-secure or operational. Verify exact binding, one consumer, clean health, and a
-real P2P round trip on each device.
+## 报告安全漏洞
+
+不要在公开 Issue 中提交漏洞利用细节或私人数据。请使用仓库的 GitHub 私密漏洞报告功能，并提供受影响版本、复现条件、影响范围和完成验证所需的最小脱敏证据。
+
+## 验收边界
+
+源码测试或发布包检查通过，不代表接收电脑已经安全或可用。每台设备都必须分别验证精确绑定、单消费者、干净健康状态和真实私聊往返。

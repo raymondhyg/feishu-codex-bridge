@@ -1,0 +1,14 @@
+{
+  "allowedSenderIds": [
+    "<AUTHORIZED_USER_OPEN_ID>"
+  ],
+  "fixedControllerThreadId": "<PRIVATE_CODEX_THREAD_ID>",
+  "fixedControllerDesktopVisibility": "require",
+  "runtimeDirectory": "C:\\Users\\<WINDOWS_USER>\\.codex\\private\\lark-im-codex-bridge",
+  "codexWorkingDirectory": "C:\\Users\\<WINDOWS_USER>\\.codex\\private\\lark-im-codex-bridge\\workspace",
+  "attachmentRoot": "C:\\Users\\<WINDOWS_USER>\\.codex\\private\\lark-im-codex-bridge\\attachments",
+  "maxAttachmentBytes": 52428800,
+  "maxAttachmentTotalBytes": 104857600,
+  "codexControllerTurnTimeoutSeconds": 1800,
+  "maxReplyChars": 12000
+}

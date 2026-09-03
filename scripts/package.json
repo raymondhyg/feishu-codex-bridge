@@ -1,0 +1,23 @@
+{
+  "name": "feishu-codex-bridge",
+  "version": "0.12.7",
+  "private": true,
+  "description": "Unofficial fixed-controller Feishu/Lark to Codex Desktop transport bridge",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/raymondhyg/feishu-codex-bridge.git"
+  },
+  "type": "module",
+  "scripts": {
+    "start": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File ./start-bridge.ps1 -Foreground",
+    "preflight": "node bridge.mjs --preflight",
+    "check": "node --check bridge.mjs && node --check bridge-core.mjs && node --check codex-app-server.mjs && node --check codex-desktop-ipc.mjs && node --check fixed-controller-relay.mjs && node --check controller-thread-transport.mjs && node --check configure-fixed-controller-relay.mjs && node --check controller-thread-tool.mjs",
+    "configure-fixed-relay": "node configure-fixed-controller-relay.mjs",
+    "test": "node --test",
+    "health": "powershell -NoProfile -ExecutionPolicy Bypass -File ./health-check.ps1"
+  },
+  "dependencies": {
+    "@openai/codex": "0.145.0"
+  }
+}

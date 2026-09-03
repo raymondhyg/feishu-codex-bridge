@@ -1,0 +1,4 @@
+interface:
+  display_name: "Feishu/Lark Codex Bridge"
+  short_description: "从新机前置检查到隐藏自启，部署飞书与固定本地 Codex 总控的轻量转述"
+default_prompt: "Use $lark-im-codex-bridge to install, preserve-config upgrade, recoverably repair, run, validate, or troubleshoot the fixed-controller-only Feishu relay. Treat the v0.12.7 release as an external new/upgrade/repair distribution; do not infer receiving-device runtime acceptance from package verification. Keep the bridge semantics-free: authorized private text, images, and files go to one Desktop-native controller bound by exact thread ID and cwd, and that turn result returns to Feishu. Require Desktop-visible delivery. Treat bot/user identities and skill presence as prerequisites only; verify transport and each Feishu resource operation with their own read-back evidence."

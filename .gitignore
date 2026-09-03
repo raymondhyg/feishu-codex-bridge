@@ -1,0 +1,17 @@
+node_modules/
+.env
+.env.*
+private/
+logs/
+attachments/
+config.json
+state.json
+*.jsonl
+*.log
+*.sqlite
+*.sqlite3
+*.db
+*.zip
+*.sha256
+dist/
+release/

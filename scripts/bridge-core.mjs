@@ -230,14 +230,14 @@ export function validateConfig(config) {
     "codexWorkingDirectory",
     "attachmentRoot",
   ]) {
-    if (typeof config[field] !== "string" || !path.isAbsolute(config[field])) {
+    if (typeof config[field] !== "string" || !isAbsolutePath(config[field])) {
       errors.push(`${field} must be an absolute path`);
     }
   }
   for (const field of ["larkCliScript", "codexCliScript"]) {
     if (
       config[field] !== undefined &&
-      (typeof config[field] !== "string" || !path.isAbsolute(config[field]))
+      (typeof config[field] !== "string" || !isAbsolutePath(config[field]))
     ) {
       errors.push(`${field} must be an absolute path when provided`);
     }
@@ -375,4 +375,7 @@ export function clearFixedControllerOwnerBusyRetry(record) {
   delete record.desktopOwnerBusyStartedAt;
   delete record.desktopOwnerBusyRetryCount;
   return record;
+}
+function isAbsolutePath(value) {
+  return path.posix.isAbsolute(value) || path.win32.isAbsolute(value);
 }

@@ -93,7 +93,7 @@ export async function openCodexDesktopThreadDeepLink(options = {}) {
         process.env.SystemRoot ||
         String.raw`C:\Windows`,
     ).trim() || String.raw`C:\Windows`;
-  const explorerPath = path.join(windowsDirectory, "explorer.exe");
+  const explorerPath = path.win32.join(windowsDirectory, "explorer.exe");
   let child;
   try {
     child = spawnProcess(explorerPath, [deepLink], {

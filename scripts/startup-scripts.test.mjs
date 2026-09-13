@@ -6,11 +6,15 @@ import { tmpdir } from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
+const powershellExecutable = process.platform === "win32" ? "powershell.exe" : "pwsh";
+
 async function readScript(name) {
   return readFile(new URL(name, import.meta.url), "utf8");
 }
 
-test("startup retries refreshed authentication and ignores a live duplicate", async () => {
+test("startup retries refreshed authentication and ignores a live duplicate", {
+  skip: process.platform !== "win32" && "requires Windows process identity semantics",
+}, async () => {
   const [script, identityScript, packageMetadata] = await Promise.all([
     readScript("start-bridge.ps1"),
     readScript("bridge-process-identity.ps1"),
@@ -55,7 +59,7 @@ $cases = [ordered]@{
 $cases | ConvertTo-Json -Compress
 `;
   const identityProbe = spawnSync(
-    "powershell.exe",
+    powershellExecutable,
     ["-NoProfile", "-Command", probe],
     { encoding: "utf8", windowsHide: true },
   );
@@ -198,7 +202,9 @@ test("graceful stop gives aborted in-flight work time to persist for recovery", 
   assert.doesNotMatch(script, /Stop-Process|taskkill/);
 });
 
-test("graceful stop tolerates the bridge removing its PID during shutdown", async () => {
+test("graceful stop tolerates the bridge removing its PID during shutdown", {
+  skip: process.platform !== "win32" && "requires Windows node.exe and process semantics",
+}, async () => {
   const temporaryRoot = await mkdtemp(path.join(tmpdir(), "bridge-stop-race-"));
   const profileDirectory = path.join(temporaryRoot, "profile");
   const scriptDirectory = path.join(temporaryRoot, "scripts");
@@ -246,7 +252,7 @@ function Get-BridgeProcessIdentity {
     ]);
 
     const stopProbe = spawnSync(
-      "powershell.exe",
+      powershellExecutable,
       [
         "-NoProfile",
         "-ExecutionPolicy",
@@ -359,7 +365,7 @@ test("PowerShell service scripts parse cleanly", () => {
     const scriptPath = fileURLToPath(new URL(name, import.meta.url));
     const escapedPath = scriptPath.replaceAll("'", "''");
     const result = spawnSync(
-      "powershell.exe",
+      powershellExecutable,
       [
         "-NoProfile",
         "-Command",

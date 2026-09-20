@@ -1,6 +1,6 @@
 # 飞书 Codex 桥
 
-这是一个非官方、面向 Windows 的轻量传输桥：把授权用户的飞书/Lark 私聊消息送入一个精确绑定、在 Codex Desktop 中可见的本地总控任务，再把对应轮次的结果回复到原会话。
+这是一个非官方、面向 Windows 与 macOS 的轻量传输桥：把授权用户的飞书/Lark 私聊消息送入一个精确绑定、在 Codex Desktop 中可见的本地总控任务，再把对应轮次的结果回复到原会话。
 
 Bridge 坚持只做传输：不理解业务意图、不按标题选择任务、不创建第二个 AI，也不根据消息内容决定工作应该交给谁。
 
@@ -29,7 +29,7 @@ Bridge 坚持只做传输：不理解业务意图、不按标题选择任务、�
 
 ## 环境要求
 
-- Windows 10 或 Windows 11
+- Windows 10/11，或 Apple Silicon macOS
 - Codex Desktop
 - Node.js LTS
 - 飞书/Lark CLI 与所需官方 Skills
@@ -40,6 +40,7 @@ Bridge 坚持只做传输：不理解业务意图、不按标题选择任务、�
 请从 [GitHub Releases](https://github.com/raymondhyg/feishu-codex-bridge/releases) 下载完整总包。解压外层总包后，先核对 SHA256 和 manifest，再解压内层 portable ZIP。
 
 - 新电脑：阅读 [安装首读](README-FIRST.md)。
+- macOS 本机部署：阅读 [macOS 部署说明](references/macos-deployment-guide.md)。
 - 已有正常安装：
   `scripts/upgrade-or-repair-existing-computer.ps1 -Mode Upgrade`
 - 旧源码被大量修改、损坏或无法判断：
@@ -59,6 +60,17 @@ npm run preflight
 .\health-check.ps1 -RequireClean -WaitSeconds 60
 ```
 
+macOS 进入 `scripts` 后使用同一组 npm 入口：
+
+```bash
+npm ci --ignore-scripts --no-audit --no-fund
+npm run check
+npm test
+npm run preflight
+npm run install-startup
+npm run health -- --require-clean --wait-seconds=60
+```
+
 发布包验证通过，不等于接收电脑已经验收通过。每台电脑仍需完成一次真实私聊往返；按实际需要分别验收附件、文档/任务/妙记读回、FIFO、中断恢复和物理重启。
 
 ## 功能范围
@@ -69,7 +81,7 @@ npm run preflight
 - 精确线程绑定；
 - 去重、FIFO 和精确轮次关联；
 - 固定总控未激活时的有界恢复；
-- Windows 隐藏启动；
+- Windows 隐藏启动与 macOS LaunchAgent 登录自启；
 - 单消费者健康检查和脱敏诊断；
 - 新安装、保留配置升级和可恢复修复。
 
@@ -84,7 +96,7 @@ npm run preflight
 
 ## 当前版本
 
-当前公开版本：**v0.12.7**。准确变更和验证证据见 [更新日志](CHANGELOG.md) 与 Release 附件。
+当前公开版本：**v0.13.0**。准确变更和验证证据见 [更新日志](CHANGELOG.md) 与 Release 附件。
 
 本项目与字节跳动、飞书/Lark 或 OpenAI 不存在隶属、联合或官方背书关系。
 

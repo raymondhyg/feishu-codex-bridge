@@ -17,10 +17,16 @@
 - 私有配置、状态、日志、附件或消息正文；
 - 包含真实 Windows 用户名的设备运行路径。
 
-私有运行数据应保存在：
+私有运行数据应保存在当前用户的：
 
 ```text
 %USERPROFILE%\.codex\private\lark-im-codex-bridge
+```
+
+macOS 对应位置为：
+
+```text
+~/.codex/private/lark-im-codex-bridge
 ```
 
 这些内容不应进入仓库或 Release 包。

@@ -52,7 +52,7 @@ import {
 } from "./fixed-controller-relay.mjs";
 
 const scriptDirectory = path.dirname(fileURLToPath(import.meta.url));
-const BRIDGE_VERSION = "0.12.7";
+const BRIDGE_VERSION = "0.13.0";
 const RELAY_MODE = "fixed-controller-only";
 const FIXED_CONTROLLER_QUEUE_KEY = "__fixed_controller__";
 const START_RECONCILE_TIMEOUT_MS = 60_000;

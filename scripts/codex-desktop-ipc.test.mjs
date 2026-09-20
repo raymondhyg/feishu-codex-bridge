@@ -143,6 +143,50 @@ test("requests the registered Windows protocol without a shell or title lookup",
   assert.equal(result.activationVerified, false);
 });
 
+test("requests the registered macOS protocol without a shell or title lookup", async () => {
+  const calls = [];
+  const child = new EventEmitter();
+  child.unref = () => calls.push({ unref: true });
+  const threadId = "00000000-0000-4000-8000-000000000011";
+
+  const resultPromise = openCodexDesktopThreadDeepLink({
+    threadId,
+    platform: "darwin",
+    spawnProcess(command, args, options) {
+      calls.push({ command, args, options });
+      queueMicrotask(() => child.emit("spawn"));
+      return child;
+    },
+  });
+
+  const result = await resultPromise;
+  assert.deepEqual(calls[0], {
+    command: "/usr/bin/open",
+    args: [`codex://threads/${threadId}`],
+    options: {
+      detached: true,
+      shell: false,
+      stdio: "ignore",
+    },
+  });
+  assert.deepEqual(calls[1], { unref: true });
+  assert.equal(result.activationRequested, true);
+  assert.equal(result.activationVerified, false);
+});
+
+test("rejects unsupported Desktop activation platforms", async () => {
+  await assert.rejects(
+    openCodexDesktopThreadDeepLink({
+      threadId: "00000000-0000-4000-8000-000000000011",
+      platform: "linux",
+    }),
+    (error) => {
+      assert.equal(error.code, "desktop_thread_activation_unsupported");
+      return true;
+    },
+  );
+});
+
 test("aborts while the Windows protocol launcher has not acknowledged spawn", async () => {
   const controller = new AbortController();
   const child = new EventEmitter();

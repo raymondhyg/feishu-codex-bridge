@@ -30,7 +30,7 @@ if ($WaitSeconds -gt 0) {
     $lastOutput
     exit $lastExitCode
 }
-$expectedBridgeVersion = '0.12.7'
+$expectedBridgeVersion = '0.13.0'
 $expectedStateSchema = 6
 
 $scriptDirectory = Split-Path -Parent $MyInvocation.MyCommand.Path

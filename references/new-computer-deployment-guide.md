@@ -1,6 +1,6 @@
 # Feishu/Lark Codex 固定总控转发：安装、升级与修复路线图
 
-Status: external new/upgrade/repair release v0.12.7; package verification and receiving-device live acceptance are separate
+Status: Windows route for release v0.13.0; package verification and receiving-device live acceptance are separate
 Applies to: Windows 10/11 with Codex Desktop
 Ownership: personal computer / global Codex capability
 Source-computer live runtime: out of scope; this guide neither describes nor upgrades it
@@ -56,9 +56,9 @@ Node 和正常网络时通常约 35–70 分钟；连 `lark-cli` 和官方 skill
 
 ```text
 README-FIRST.md
-feishu-codex-bridge-v0.12.7-portable.zip
-feishu-codex-bridge-v0.12.7-portable.zip.sha256
-feishu-codex-bridge-v0.12.7-manifest.json
+feishu-codex-bridge-v0.13.0-portable.zip
+feishu-codex-bridge-v0.13.0-portable.zip.sha256
+feishu-codex-bridge-v0.13.0-manifest.json
 new-computer-deployment-guide.md
 ```
 
@@ -176,7 +176,7 @@ Exit：同一个 Desktop 原生任务的 ID 与 cwd 均已工具读回。
 %USERPROFILE%\.codex\skills\lark-im-codex-bridge
 ```
 
-不要多套一层同名目录。确认 `scripts/package.json` 版本为 `0.12.7`。新安装再从
+不要多套一层同名目录。确认 `scripts/package.json` 版本为 `0.13.0`。新安装再从
 `scripts` 运行：
 
 ```powershell
@@ -233,7 +233,7 @@ ok: true
 service_healthy: true
 acceptance_clean: true
 bridge_pid_identity: bridge
-bridge_version: 0.12.7
+bridge_version: 0.13.0
 state_schema: 6
 relay_mode: fixed-controller-only
 fixed_controller_target_readable: true
@@ -290,7 +290,7 @@ headless fallback。
 ## 部署收据
 
 ```text
-Feishu/Lark Codex Bridge v0.12.7 设备安装收据
+Feishu/Lark Codex Bridge v0.13.0 设备安装收据
 
 Package hash/manifest:
 Install mode (New / Upgrade / Repair):

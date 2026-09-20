@@ -14,9 +14,7 @@ description: >-
 The Feishu/Lark Codex bridge is a lightweight two-way transport. One fixed local Codex task is
 the only brain and the remote-control entry point.
 
-External distribution baseline: **v0.12.7, fixed-controller-only**.
-Source-computer local runtime: **v0.12.7, deployed and clean-health verified on
-2026-09-01; Desktop IPC v2 probe passed; real P2P acceptance pending**.
+External distribution baseline: **v0.13.0, fixed-controller-only, Windows + macOS**.
 
 The external baseline identifies the new-install, preserve-config upgrade, and
 recoverable repair package. The source-computer
@@ -113,8 +111,9 @@ relevant `lark-doc`, `lark-drive`, `lark-task`, `lark-vc`, `lark-minutes`, and
 prerequisites; transport needs preflight/health/live proof, and each personal
 resource operation needs its own minimal API read-back.
 
-For a fresh Windows computer, also read
-`README-FIRST.md` and `references/new-computer-deployment-guide.md`.
+For a fresh computer, also read `README-FIRST.md` and the platform guide:
+`references/new-computer-deployment-guide.md` on Windows or
+`references/macos-deployment-guide.md` on macOS.
 
 ## Canonical Files
 
@@ -137,6 +136,9 @@ For a fresh Windows computer, also read
 - `scripts/bootstrap-prerequisites.ps1`: read-only fresh-machine readiness
   report, with an explicit switch for the current official CLI/skill installer.
 - `scripts/prepare-new-computer.ps1`: fixed-only clean install.
+- `scripts/prepare-macos.mjs`: fixed-only macOS configuration.
+- `scripts/platform-service.mjs`: selects Windows or macOS lifecycle commands.
+- `scripts/launch-agent.mjs`: macOS login startup management.
 - `scripts/upgrade-or-repair-existing-computer.ps1`: preserve-config upgrade
   or recoverable clean-source repair for an existing canonical installation.
 - `scripts/build-portable-package.ps1`: current-only release allowlist,
@@ -163,7 +165,7 @@ A healthy current service must report:
 
 - `ok: true`;
 - `service_healthy: true`;
-- `bridge_version: 0.12.7` for the local compatibility source line after deployment;
+- `bridge_version: 0.13.0` for this release-candidate source line after deployment;
 - `bridge_pid_identity: bridge`;
 - `state_schema: 6`;
 - `relay_mode: fixed-controller-only`;
@@ -282,17 +284,17 @@ Desktop task-creation path.
 
 ## External Package Evidence
 
-As of 2026-09-01:
+As of 2026-09-20 for v0.13.0:
 
-- v0.12.7 current-only syntax and PowerShell parse checks: verified;
-- current-only automated tests: 117/117;
-- portable v0.12.7 builder uses a 42-file current-only allowlist, external
-  guide/readme/hash/manifest, extracted smoke test, publication read-back, and
-  one complete release ZIP whose extracted five-file set is verified;
+- current-only syntax and cross-platform PowerShell parse checks: verified;
+- current-only automated tests: 121 passed, 2 Windows-runtime tests skipped on macOS;
+- the portable builder uses a 50-file current-only allowlist, external
+  guides/readme/hash/manifest, extracted dependency install, syntax check, test
+  run, and one complete Windows/macOS ZIP whose extracted file set is verified;
 - the same ZIP supports clean install, preserve-config upgrade, and recoverable
   repair installation; the latter two archive old public source and retain the
   receiving device's private config/state rather than merging unknown edits;
-- v0.12.7 includes the bounded inactive-controller recovery contract: only a
+- v0.13.0 retains the bounded inactive-controller recovery contract: only a
   confirmed `desktop_ipc_no_owner / not_dispatched` result may request the exact
   private thread deep link, verify the Desktop owner, and retry the identical
   envelope once;
@@ -300,8 +302,9 @@ As of 2026-09-01:
   profile paths, and literal private Codex thread URIs before publication;
 - no private runtime, credentials, auth data, message content, or full private
   IDs are part of the package;
-- the package manifest declares an external new/upgrade/repair audience and states
-  that source-computer runtime is not part of package acceptance;
+- the package manifest declares an external Windows/macOS fixed-controller audience;
+- macOS has clean health and a real P2P round trip on the source device; Windows
+  runtime and receiving-device acceptance remain separate release gates;
 - bot/user identity, Desktop owner, preflight, one-consumer health, Feishu live
   round trip, resource read-backs, reboot, FIFO, attachments, and interrupted
   recovery must be proven separately on each receiving device.

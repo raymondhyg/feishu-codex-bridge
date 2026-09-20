@@ -1,5 +1,13 @@
 # 更新日志
 
+## v0.13.0 - 2026-09-20
+
+- 一个便携 Release 同时包含 Windows 与 macOS 运行文件，并由统一 npm 生命周期入口按系统选择服务实现。
+- macOS 增加 LaunchAgent 登录自启、优雅启停、健康检查和固定总控配置入口。
+- macOS CLI 路径从当前 `PATH` 解析，兼容 Apple Silicon、Intel 与非默认安装位置。
+- 收紧 macOS PID 身份校验，拒绝 `bridge.mjs.bak` 等路径前缀碰撞。
+- Mac 实机已完成源码测试、预检、单消费者健康检查与真实飞书私聊往返；Windows 接收设备仍需独立完成安装与真实往返验收。
+
 ## v0.12.7 - 2026-09-01
 
 - 支持 Codex Desktop IPC wire v2；只有 v2 明确返回未投递时，才允许有界回退到 v1。

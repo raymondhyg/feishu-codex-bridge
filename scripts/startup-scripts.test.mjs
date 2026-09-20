@@ -32,7 +32,7 @@ test("startup retries refreshed authentication and ignores a live duplicate", {
   assert.match(identityScript, /return 'unknown'/);
   assert.match(
     packageMetadata,
-    /"start": "powershell\.exe .*start-bridge\.ps1 -Foreground"/,
+    /"start": "node platform-service\.mjs start"/,
   );
   assert.match(script, /\$preflightAttempts = 3/);
   assert.match(script, /\$bridgeScript --preflight/);
@@ -281,7 +281,7 @@ function Get-BridgeProcessIdentity {
 test("health requires fixed-controller-only mode", async () => {
   const script = await readScript("health-check.ps1");
 
-  assert.match(script, /expectedBridgeVersion = '0\.12\.7'/);
+  assert.match(script, /expectedBridgeVersion = '0\.13\.0'/);
   assert.match(script, /expectedStateSchema = 6/);
   assert.match(script, /pendingReplies/);
   assert.match(script, /pending_fixed_relays/);
@@ -349,7 +349,9 @@ test("existing-device entry preserves private runtime and replaces public source
   assert.doesNotMatch(script, /Stop-Process|taskkill/i);
 });
 
-test("PowerShell service scripts parse cleanly", () => {
+test("PowerShell service scripts parse cleanly", {
+  skip: process.platform !== "win32" && spawnSync(powershellExecutable, ["-NoProfile", "-Command", "exit 0"]).status === null && "PowerShell is not installed",
+}, () => {
   for (const name of [
     "build-portable-package.ps1",
     "bridge-process-identity.ps1",

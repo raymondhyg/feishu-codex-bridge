@@ -1,4 +1,4 @@
-# Feishu/Lark Codex Bridge v0.12.7：安装、升级与修复首读
+# Feishu/Lark Codex Bridge v0.13.0：Windows / macOS 安装首读
 
 这是可直接外发的完整 Release，不是补丁包。一个 ZIP 同时支持新用户安装、
 老用户保留配置升级，以及旧源码被改乱后的可恢复修复安装。
@@ -23,7 +23,12 @@
 ## 先选择唯一入口
 
 先核对 ZIP 的 SHA256 和 manifest，再解压。所有命令从解压包的 `scripts`
-目录运行。
+目录运行。`npm start`、`npm run stop`、`npm run health` 和自启管理会自动按
+Windows/macOS 选择实现。
+
+macOS 新安装请按 `references/macos-deployment-guide.md`；Windows 新安装、升级
+和修复继续按下列 PowerShell 入口。两套入口共享同一个 ZIP、桥核心和固定总控
+安全模型，但不会把一台设备的私有配置复制到另一台设备。
 
 ### 1. 新用户或干净电脑
 

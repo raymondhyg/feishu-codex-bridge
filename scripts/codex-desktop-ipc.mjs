@@ -1,9 +1,16 @@
 import { randomUUID } from "node:crypto";
 import { spawn } from "node:child_process";
 import net from "node:net";
+import { homedir } from "node:os";
 import path from "node:path";
 
 export const CODEX_DESKTOP_IPC_PIPE = String.raw`\\.\pipe\codex-ipc`;
+export const CODEX_DESKTOP_IPC_SOCKET = path.join(
+  homedir(),
+  ".codex",
+  "ipc",
+  "ipc.sock",
+);
 export const CODEX_DESKTOP_IPC_MAX_FRAME_BYTES = 256 * 1024 * 1024;
 
 const METHOD_VERSIONS = new Map([
@@ -63,10 +70,10 @@ export async function openCodexDesktopThreadDeepLink(options = {}) {
   const threadId = requireCodexThreadId(options.threadId);
   throwIfAborted(options.signal);
   const platform = options.platform || process.platform;
-  if (platform !== "win32") {
+  if (platform !== "win32" && platform !== "darwin") {
     throw new CodexDesktopIpcError(
       "desktop_thread_activation_unsupported",
-      "Codex Desktop thread activation is only supported on Windows",
+      "Codex Desktop thread activation is supported only on Windows and macOS",
       { delivery: "not_dispatched" },
     );
   }
@@ -86,22 +93,37 @@ export async function openCodexDesktopThreadDeepLink(options = {}) {
   const launchTimeoutMs = Number.isFinite(options.launchTimeoutMs)
     ? Math.max(1, Number(options.launchTimeoutMs))
     : 5000;
-  const windowsDirectory =
-    String(
-      options.windowsDirectory ||
-        process.env.WINDIR ||
-        process.env.SystemRoot ||
-        String.raw`C:\Windows`,
-    ).trim() || String.raw`C:\Windows`;
-  const explorerPath = path.win32.join(windowsDirectory, "explorer.exe");
-  let child;
-  try {
-    child = spawnProcess(explorerPath, [deepLink], {
+  let command;
+  let args;
+  let spawnOptions;
+  if (platform === "darwin") {
+    command = options.openExecutable || "/usr/bin/open";
+    args = [deepLink];
+    spawnOptions = {
+      detached: true,
+      shell: false,
+      stdio: "ignore",
+    };
+  } else {
+    const windowsDirectory =
+      String(
+        options.windowsDirectory ||
+          process.env.WINDIR ||
+          process.env.SystemRoot ||
+          String.raw`C:\Windows`,
+      ).trim() || String.raw`C:\Windows`;
+    command = path.win32.join(windowsDirectory, "explorer.exe");
+    args = [deepLink];
+    spawnOptions = {
       detached: true,
       shell: false,
       stdio: "ignore",
       windowsHide: true,
-    });
+    };
+  }
+  let child;
+  try {
+    child = spawnProcess(command, args, spawnOptions);
     child.unref?.();
   } catch (error) {
     throw new CodexDesktopIpcError(
@@ -151,7 +173,7 @@ export async function openCodexDesktopThreadDeepLink(options = {}) {
         reject,
         new CodexDesktopIpcError(
           "desktop_thread_activation_launch_timeout",
-          "Codex Desktop activation request did not reach the Windows protocol handler in time",
+          `Codex Desktop activation request did not reach the ${platform === "darwin" ? "macOS" : "Windows"} protocol handler in time`,
           { delivery: "not_dispatched" },
         ),
       );
@@ -402,7 +424,11 @@ function methodVersion(method) {
 
 export class CodexDesktopIpcClient {
   constructor(options = {}) {
-    this.pipePath = options.pipePath || CODEX_DESKTOP_IPC_PIPE;
+    this.pipePath =
+      options.pipePath ||
+      (process.platform === "darwin"
+        ? CODEX_DESKTOP_IPC_SOCKET
+        : CODEX_DESKTOP_IPC_PIPE);
     this.clientType = options.clientType || "lark_codex_bridge";
     this.connectTimeoutMs = Number.isFinite(options.connectTimeoutMs)
       ? Math.max(1, options.connectTimeoutMs)

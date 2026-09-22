@@ -22,6 +22,7 @@ function xml(value) {
 }
 
 export function buildLaunchAgent(options = {}) {
+  const caffeinateExecutable = options.caffeinateExecutable || "/usr/bin/caffeinate";
   const nodeExecutable = options.nodeExecutable || process.execPath;
   const sourceScript = options.bridgeScript || bridgeScript;
   const workingDirectory = options.workingDirectory || scriptDirectory;
@@ -34,6 +35,8 @@ export function buildLaunchAgent(options = {}) {
   <string>${label}</string>
   <key>ProgramArguments</key>
   <array>
+    <string>${xml(caffeinateExecutable)}</string>
+    <string>-s</string>
     <string>${xml(nodeExecutable)}</string>
     <string>${xml(sourceScript)}</string>
   </array>
@@ -83,7 +86,13 @@ async function install() {
   await launchctl(["bootstrap", domain, agentPath]);
   await launchctl(["enable", `${domain}/${label}`]);
   await launchctl(["kickstart", "-k", `${domain}/${label}`]);
-  return { ok: true, status: "installed", label };
+  return {
+    ok: true,
+    status: "installed",
+    label,
+    sleep_policy: "prevent-idle-system-sleep-on-ac-power",
+    display_sleep_unchanged: true,
+  };
 }
 
 async function uninstall() {

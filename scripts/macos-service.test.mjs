@@ -50,6 +50,7 @@ test("LaunchAgent uses fixed absolute paths and private log files", () => {
     runtimeDirectory: "/Users/test/.codex/private/lark-im-codex-bridge",
   });
   assert.match(plist, /com\.openai\.lark-codex-bridge/);
+  assert.match(plist, /<string>\/usr\/bin\/caffeinate<\/string>\s*<string>-s<\/string>/);
   assert.match(plist, /<string>\/opt\/homebrew\/bin\/node<\/string>/);
   assert.match(plist, /<string>\/Users\/test\/Bridge\/scripts\/bridge\.mjs<\/string>/);
   assert.match(plist, /<key>RunAtLoad<\/key>\s*<true\/>/);
@@ -62,12 +63,14 @@ test("LaunchAgent uses fixed absolute paths and private log files", () => {
 
 test("LaunchAgent XML escapes paths", () => {
   const plist = buildLaunchAgent({
+    caffeinateExecutable: "/tmp/caffeinate&tool",
     nodeExecutable: "/tmp/node&tool",
     bridgeScript: "/tmp/<bridge>.mjs",
     workingDirectory: "/tmp/'workspace'",
     runtimeDirectory: '/tmp/"private"',
   });
   assert.match(plist, /node&amp;tool/);
+  assert.match(plist, /caffeinate&amp;tool/);
   assert.match(plist, /&lt;bridge&gt;\.mjs/);
   assert.match(plist, /&apos;workspace&apos;/);
   assert.match(plist, /&quot;private&quot;/);

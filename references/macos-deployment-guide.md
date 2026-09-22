@@ -34,6 +34,10 @@ npm run health -- --require-clean --wait-seconds=60
 
 LaunchAgent 文件位于 `~/Library/LaunchAgents/com.openai.lark-codex-bridge.plist`。它只保存公开程序路径和私密日志位置，不包含飞书密钥、用户 ID 或任务 ID。
 
+LaunchAgent 通过系统自带的 `caffeinate -s` 托管桥进程：接通电源且桥在运行时，
+阻止整机因空闲进入睡眠，但不阻止显示器熄灭；使用电池或合盖时仍遵守 macOS
+原有睡眠策略。已经进入睡眠的 Mac 不能依赖飞书长连接消息可靠唤醒。
+
 ## 生命周期
 
 ```bash

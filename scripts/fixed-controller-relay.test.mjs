@@ -78,7 +78,7 @@ test("verifies the exact fixed target and starts an idle turn with the fixed una
   );
   assert.deepEqual(appServer.calls[1].params, {
     threadId: THREAD_ID,
-    input: [{ type: "text", text: "用户的原始消息" }],
+    input: [{ type: "text", text: "用户的原始消息", text_elements: [] }],
     approvalPolicy: "never",
     sandboxPolicy: { type: "dangerFullAccess" },
   });
@@ -155,7 +155,7 @@ test("starts the fixed turn through the Desktop owner without a second App Serve
   );
   assert.deepEqual(desktopRequest, {
     threadId: THREAD_ID,
-    input: [{ type: "text", text: exactInput }],
+    input: [{ type: "text", text: exactInput, text_elements: [] }],
     approvalPolicy: "never",
     sandboxPolicy: { type: "dangerFullAccess" },
     clientUserMessageId: "om_visible_message",
@@ -1191,7 +1191,7 @@ test("resumes a notLoaded fixed target by exact id with the fixed unattended pro
   });
   assert.deepEqual(appServer.calls[2].params, {
     threadId: THREAD_ID,
-    input: [{ type: "text", text: "首条远程消息" }],
+    input: [{ type: "text", text: "首条远程消息", text_elements: [] }],
     approvalPolicy: "never",
     sandboxPolicy: { type: "dangerFullAccess" },
     clientUserMessageId: "om_example_message",
@@ -1208,10 +1208,20 @@ test("builds an attachment relay with file paths and local image input", () => {
   assert.match(input[0].text, /请看看这个附件/);
   assert.match(input[0].text, /brief\.pdf/);
   assert.match(input[0].text, /photo\.png/);
+  assert.deepEqual(input[0].text_elements, []);
   assert.deepEqual(input[1], {
     type: "localImage",
     path: "C:\\Bridge\\attachments\\photo.png",
   });
+});
+
+test("image-only relays supply an empty text element array without changing the image", () => {
+  assert.deepEqual(buildFixedControllerAttachmentInput({
+    imagePaths: ["/offline-fixture/example.png"],
+  }), [
+    { type: "text", text: "用户发送了一条没有可提取文字的附件消息。", text_elements: [] },
+    { type: "localImage", path: "/offline-fixture/example.png" },
+  ]);
 });
 
 test("waits while the fixed target is active, then starts exactly one new turn", async () => {
@@ -1247,7 +1257,7 @@ test("waits while the fixed target is active, then starts exactly one new turn",
 test("passes an App Server input array with only the fixed unattended execution profile", async () => {
   const appServer = new FakeAppServer({ reads: [thread("idle")] });
   const input = [
-    { type: "text", text: "正文" },
+    { type: "text", text: "正文", text_elements: [{ start: 0, end: 1 }] },
     { type: "localImage", path: "F:\\relay\\image.png" },
   ];
   await startFixedControllerTurn(appServer, {

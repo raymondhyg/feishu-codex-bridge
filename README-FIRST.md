@@ -1,4 +1,4 @@
-# Feishu/Lark Codex Bridge v0.13.1：Windows / macOS 安装首读
+# Feishu/Lark Codex Bridge v0.13.2：Windows / macOS 安装首读
 
 这是可直接外发的完整 Release，不是补丁包。一个 ZIP 同时支持新用户安装、
 老用户保留配置升级，以及旧源码被改乱后的可恢复修复安装。

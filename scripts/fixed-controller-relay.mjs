@@ -93,10 +93,15 @@ function finalAgentMessage(turn) {
   return "";
 }
 
+function buildTextInput(text) {
+  // Desktop rendering expects a text element array even for plain text.
+  return { type: "text", text, text_elements: [] };
+}
+
 function normalizeInput(input) {
   if (typeof input === "string") {
     if (!input.trim()) throw new TypeError("input text must not be empty");
-    return [{ type: "text", text: input }];
+    return [buildTextInput(input)];
   }
   if (!Array.isArray(input) || input.length === 0) {
     throw new TypeError("input must be a non-empty string or App Server input array");
@@ -134,7 +139,7 @@ export function buildFixedControllerAttachmentInput(options = {}) {
     sections.push("用户发送了一条没有可提取文字的附件消息。");
   }
   return [
-    { type: "text", text: sections.join("\n\n") },
+    buildTextInput(sections.join("\n\n")),
     ...imagePaths.map((imagePath) => ({
       type: "localImage",
       path: imagePath,

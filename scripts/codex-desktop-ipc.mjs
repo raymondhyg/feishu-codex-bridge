@@ -590,7 +590,7 @@ export class CodexDesktopIpcClient {
     const snapshotPromise = this.#waitForBroadcast(
       (message) =>
         message?.method === "thread-stream-state-changed" &&
-        message?.version === 11 &&
+        (message?.version === 11 || message?.version === 13) &&
         message?.params?.conversationId === conversationId &&
         message?.params?.hostId === hostId &&
         message?.params?.change?.type === "snapshot",

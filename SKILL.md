@@ -14,7 +14,7 @@ description: >-
 The Feishu/Lark Codex bridge is a lightweight two-way transport. One fixed local Codex task is
 the only brain and the remote-control entry point.
 
-External distribution baseline: **v0.13.2, fixed-controller-only, Windows + macOS**.
+External distribution baseline: **v0.13.3, fixed-controller-only, Windows + macOS**.
 
 The external baseline identifies the new-install, preserve-config upgrade, and
 recoverable repair package. The source-computer
@@ -165,7 +165,7 @@ A healthy current service must report:
 
 - `ok: true`;
 - `service_healthy: true`;
-- `bridge_version: 0.13.2` after deployment;
+- `bridge_version: 0.13.3` after deployment;
 - `bridge_pid_identity: bridge`;
 - `state_schema: 6`;
 - `relay_mode: fixed-controller-only`;

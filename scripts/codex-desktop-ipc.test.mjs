@@ -7,6 +7,7 @@ import {
   buildCodexDesktopThreadDeepLink,
   buildCodexDesktopDiscoveryResponse,
   CodexDesktopIpcError,
+  CodexDesktopIpcClient,
   CodexDesktopIpcFrameDecoder,
   encodeCodexDesktopIpcFrame,
   isCodexDesktopConversationIdle,
@@ -24,6 +25,7 @@ class FakeSocket extends EventEmitter {
     this.discoveryResponses = [];
     this.followCount = 0;
     this.emitSnapshots = options.emitSnapshots !== false;
+    this.snapshotVersion = options.snapshotVersion ?? 11;
     this.snapshotOwnerIds = options.snapshotOwnerIds || ["desktop-owner"];
     this.snapshotState = options.snapshotState || {
       resumeState: "resumed",
@@ -56,7 +58,7 @@ class FakeSocket extends EventEmitter {
           method: "thread-stream-state-changed",
           sourceClientId: ownerClientId,
           targetClientIds: ["bridge-client"],
-          version: 11,
+          version: this.snapshotVersion,
           params: {
             conversationId: request.params.conversationId,
             hostId: request.params.hostId,
@@ -92,6 +94,26 @@ class FakeSocket extends EventEmitter {
     this.emit("close");
   }
 }
+
+test("accepts Desktop owner snapshots on wire versions 11 and 13", async () => {
+  for (const snapshotVersion of [11, 13]) {
+    const socket = new FakeSocket(
+      (request) => response(request, { clientId: "bridge-client" }),
+      { snapshotVersion },
+    );
+    const client = new CodexDesktopIpcClient({ createConnection: () => socket });
+    try {
+      const snapshot = await client.followThreadSnapshot({
+        conversationId: "00000000-0000-4000-8000-000000000011",
+        timeoutMs: 100,
+      });
+      assert.equal(snapshot.ownerClientId, "desktop-owner");
+      assert.equal(snapshot.revision, 1);
+    } finally {
+      client.close();
+    }
+  }
+});
 
 test("builds only the exact fixed-controller deep link", () => {
   const threadId = "00000000-0000-4000-8000-000000000011";

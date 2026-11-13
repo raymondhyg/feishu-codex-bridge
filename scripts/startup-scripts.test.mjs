@@ -281,7 +281,7 @@ function Get-BridgeProcessIdentity {
 test("health requires fixed-controller-only mode", async () => {
   const script = await readScript("health-check.ps1");
 
-  assert.match(script, /expectedBridgeVersion = '0\.13\.0'/);
+  assert.match(script, /expectedBridgeVersion = '0\.13\.1'/);
   assert.match(script, /expectedStateSchema = 6/);
   assert.match(script, /pendingReplies/);
   assert.match(script, /pending_fixed_relays/);
@@ -289,6 +289,7 @@ test("health requires fixed-controller-only mode", async () => {
   assert.match(script, /acceptance_clean/);
   assert.match(script, /bridge_pid_identity/);
   assert.match(script, /\$pidAlive = \$pidIdentity -eq 'bridge'/);
+  assert.doesNotMatch(script, /-Tail\s+\d+/);
   assert.match(script, /\$RequireClean/);
   assert.match(script, /\$WaitSeconds/);
   assert.match(script, /relayMode -eq 'fixed-controller-only'/);

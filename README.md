@@ -96,7 +96,7 @@ npm run health -- --require-clean --wait-seconds=60
 
 ## 当前版本
 
-当前公开版本：**v0.13.0**。准确变更和验证证据见 [更新日志](CHANGELOG.md) 与 Release 附件。
+当前版本：**v0.13.1**。准确变更和验证证据见 [更新日志](CHANGELOG.md) 与 Release 附件。
 
 本项目与字节跳动、飞书/Lark 或 OpenAI 不存在隶属、联合或官方背书关系。
 

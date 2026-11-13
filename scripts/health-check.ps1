@@ -30,7 +30,7 @@ if ($WaitSeconds -gt 0) {
     $lastOutput
     exit $lastExitCode
 }
-$expectedBridgeVersion = '0.13.0'
+$expectedBridgeVersion = '0.13.1'
 $expectedStateSchema = 6
 
 $scriptDirectory = Split-Path -Parent $MyInvocation.MyCommand.Path
@@ -75,8 +75,9 @@ if (Test-Path -LiteralPath $statePath) {
 }
 
 $readyRecord = $null
-if (Test-Path -LiteralPath $logPath) {
-    Get-Content -LiteralPath $logPath -Tail 200 -Encoding UTF8 |
+if ($pidAlive -and (Test-Path -LiteralPath $logPath)) {
+    # Readiness is logged at startup, not on every message or reconnect.
+    Get-Content -LiteralPath $logPath -Encoding UTF8 |
         ForEach-Object {
             try {
                 $record = $_ | ConvertFrom-Json

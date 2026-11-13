@@ -1,8 +1,32 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import { mkdtemp, rm, writeFile } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import path from "node:path";
 
 import { bridgeProcessIdentity } from "./bridge-service.mjs";
 import { buildLaunchAgent } from "./launch-agent.mjs";
+import { readReadyRecord } from "./health-check.mjs";
+
+test("health finds the latest readiness record for the live PID beyond 200 log lines", async () => {
+  const dir = await mkdtemp(path.join(tmpdir(), "bridge-health-"));
+  const log = path.join(dir, "bridge.log.jsonl");
+  const ready = { event: "listener_ready", bridgePid: 123, bridgeVersion: "0.13.1" };
+  try {
+    await writeFile(log, [
+      JSON.stringify({ ...ready, bridgeVersion: "older" }),
+      JSON.stringify(ready),
+      ...Array(300).fill('{"event":"listener_diagnostic"}'),
+      JSON.stringify({ ...ready, bridgePid: 456 }),
+      '{"event":',
+    ].join("\r\n"));
+    assert.deepEqual(await readReadyRecord(log, 123), ready);
+    assert.equal(await readReadyRecord(log, 789), null);
+    assert.equal(await readReadyRecord(path.join(dir, "missing"), 123), null);
+  } finally {
+    await rm(dir, { recursive: true, force: true });
+  }
+});
 
 test("macOS process identity accepts only node running the exact bridge script", async () => {
   const bridgeScript = "/Applications/Bridge/scripts/bridge.mjs";

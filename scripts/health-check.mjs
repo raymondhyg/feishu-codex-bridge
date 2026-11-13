@@ -1,12 +1,14 @@
 import { spawn } from "node:child_process";
+import { createReadStream } from "node:fs";
 import { readFile } from "node:fs/promises";
 import { homedir } from "node:os";
 import path from "node:path";
+import { createInterface } from "node:readline";
 import { fileURLToPath } from "node:url";
 
 import { bridgeProcessIdentity } from "./bridge-service.mjs";
 
-const EXPECTED_BRIDGE_VERSION = "0.13.0";
+const EXPECTED_BRIDGE_VERSION = "0.13.1";
 const EXPECTED_STATE_SCHEMA = 6;
 const EVENT_KEY = "im.message.receive_v1";
 const runtimeDirectory = path.join(
@@ -62,11 +64,16 @@ async function eventStatus(config) {
   }
 }
 
-async function readReadyRecord(logPath, pid) {
+export async function readReadyRecord(logPath, pid) {
+  if (!Number.isSafeInteger(pid) || pid <= 0) return null;
   try {
-    const lines = (await readFile(logPath, "utf8")).trim().split(/\r?\n/).slice(-200);
+    // Readiness is logged at startup, not on every message or reconnect.
+    const lines = createInterface({
+      input: createReadStream(logPath, { encoding: "utf8" }),
+      crlfDelay: Infinity,
+    });
     let record = null;
-    for (const line of lines) {
+    for await (const line of lines) {
       try {
         const candidate = JSON.parse(line);
         if (candidate.event === "listener_ready" && Number(candidate.bridgePid) === pid) {
@@ -93,7 +100,9 @@ export async function collectHealth() {
     pid = null;
   }
   const pidIdentity = pid ? await bridgeProcessIdentity(pid) : "absent";
-  const ready = await readReadyRecord(path.join(runtimeDirectory, "bridge.log.jsonl"), pid);
+  const ready = pidIdentity === "bridge"
+    ? await readReadyRecord(path.join(runtimeDirectory, "bridge.log.jsonl"), pid)
+    : null;
   const status = await eventStatus(config);
   const consumers = status.consumers || [];
   const pendingRelayCount = Object.keys(state?.pendingFixedRelays || {}).length;

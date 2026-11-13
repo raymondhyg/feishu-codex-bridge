@@ -1,105 +1,53 @@
 # 飞书 Codex 桥
 
-这是一个非官方、面向 Windows 与 macOS 的轻量传输桥：把授权用户的飞书/Lark 私聊消息送入一个精确绑定、在 Codex Desktop 中可见的本地总控任务，再把对应轮次的结果回复到原会话。
+用手机在飞书里私聊机器人，让自己电脑上 **一个指定的 Codex 会话**处理消息，结果再回复到原飞书消息。不需要把 Codex 搬到服务器，但电脑要在线，桌面应用和桥都要运行。
 
-Bridge 坚持只做传输：不理解业务意图、不按标题选择任务、不创建第二个 AI，也不根据消息内容决定工作应该交给谁。
+这个桥适合单人私用。它只负责传递文字、图片和文件，不做任务分派，也不会另起一个 AI。它不是飞书任务智能体，不接管飞书任务清单。
 
-## 工作链路
+## 从零开始
 
-```text
-授权用户的飞书/Lark 私聊
-  -> 身份校验、去重、附件处理、FIFO
-  -> 私下配置的精确 Codex 任务 ID 与工作目录
-  -> Desktop 可见的 Codex 轮次
-  -> 精确关联的轮次结果
-  -> 回复到原飞书/Lark 消息
-```
+### 1. 准备电脑和飞书应用
 
-## 安全模型
+- 电脑：Windows 10/11 或 macOS，安装并登录 ChatGPT/Codex Desktop，准备 Node.js 22 和 `lark-cli`。
+- 飞书：在你的组织里准备一个自建应用，启用机器人、私聊收发权限和 `im.message.receive_v1` 长连接事件。发布或审批通过后，让你的账号能私聊它，并按部署说明核验 CLI 身份。
+- Codex：从桌面界面创建一个专用本地会话，确认能打开并正常对话。准备它的精确会话 ID 和实际工作目录；桥不会按名称查找。
 
-本项目面向“单一可信使用者 + 白名单私聊入口”。绑定的 Codex 总控使用固定的无人值守全权限运行配置。
+**先看 [安全说明](SECURITY.md)。** 绑定的 Codex 会话以无需逐次审批的全权限配置运行。只允许自己信任的账号私聊，不要开放给群聊或陌生人。凭据、真实会话 ID、配置、日志和附件不要提交到 GitHub。
 
-请不要：
+### 2. 下载、校验并安装
 
-- 把机器人开放给群聊或不可信用户；
-- 使用面向大量人员的公共飞书应用；
-- 把凭据、完整线程 ID、消息正文、日志、附件或运行状态提交到仓库。
+到 [v0.13.4 Release](https://github.com/raymondhyg/feishu-codex-bridge/releases/tag/v0.13.4) 下载 `feishu-codex-bridge-v0.13.4-portable.zip` 和同名 `.sha256`。Windows 和 Mac 下载的是**同一个 ZIP**，不需要另找平台包。不要选 GitHub 自动生成的 Source code ZIP。
 
-安装前请先阅读 [安全说明](SECURITY.md)。
+在下载目录校验，确认结果和 `.sha256` 里的值一致，再解压到准备长期保留的目录：
 
-## 环境要求
+| 系统 | 校验命令 | 安装入口 |
+| --- | --- | --- |
+| Windows | `Get-FileHash .\feishu-codex-bridge-v0.13.4-portable.zip -Algorithm SHA256` | [Windows 部署指南](references/new-computer-deployment-guide.md) |
+| macOS | `shasum -a 256 -c feishu-codex-bridge-v0.13.4-portable.zip.sha256` | [macOS 部署指南](references/macos-deployment-guide.md) |
 
-- Windows 10/11，或 Apple Silicon macOS
-- Codex Desktop
-- Node.js LTS
-- 飞书/Lark CLI 与所需官方 Skills
-- 已配置私聊消息事件的飞书/Lark 应用
+详细命令见 [安装首读](README-FIRST.md) 和对应系统指南。按指南在解压包的 `scripts` 目录完成依赖安装、私有绑定、预检和登录自启。不要把另一台电脑的私有配置直接复制过来。
 
-## 安装、升级与修复
+### 3. 发第一条消息验收
 
-请从 [GitHub Releases](https://github.com/raymondhyg/feishu-codex-bridge/releases) 下载完整总包。解压外层总包后，先核对 SHA256 和 manifest，再解压内层 portable ZIP。
+1. 查桥的健康状态：一个监听器、没有待转发或待回复。Windows 和 macOS 的检查命令见各自指南。
+2. 从白名单飞书账号私聊机器人，发 **「连接测试，请只回复：收到」**。
+3. 确认手机收到「收到」，再从侧栏打开绑定的 Codex 会话，能看到对应的新一轮。
 
-- 新电脑：阅读 [安装首读](README-FIRST.md)。
-- macOS 本机部署：阅读 [macOS 部署说明](references/macos-deployment-guide.md)。
-- 已有正常安装：
-  `scripts/upgrade-or-repair-existing-computer.ps1 -Mode Upgrade`
-- 旧源码被大量修改、损坏或无法判断：
-  `scripts/upgrade-or-repair-existing-computer.ps1 -Mode Repair`
+**健康检查通过不等于收发通过。** 首次收发正常后再测试图片、文件；需要无人值守的话，另做一次重启后的实测。Mac 接电时桥可防止系统因空闲进入睡眠，不会唤醒已经睡眠的 Mac。
 
-升级和修复会保留接收电脑上的私有配置与状态，备份旧公共源码，然后安装干净的 Release 源码；不会把未知的旧修改自动合并进新版。
+## 已有安装怎么升级
 
-## 本地验证
+- **Windows**：从新版解压包运行 [安装首读](README-FIRST.md) 的 Upgrade 或 Repair 入口，保留私有配置和状态。
+- **macOS**：按 [部署指南](references/macos-deployment-guide.md) 的生命周期命令，先确认队列为空，备份旧源码和私有配置、状态，优雅停止旧桥。换用新包后安装依赖并做预检，再从新目录注册自启。已有绑定不需要重建，不要重新执行初始绑定步骤。
 
-进入 `scripts` 目录运行：
+升级后重新做一次真实私聊往返；不要同时启动两份桥。
 
-```powershell
-npm ci --ignore-scripts --no-audit --no-fund
-npm run check
-npm test
-npm run preflight
-.\health-check.ps1 -RequireClean -WaitSeconds 60
-```
+## 出问题先看哪一环
 
-macOS 进入 `scripts` 后使用同一组 npm 入口：
+- **没收到飞书消息**：查飞书应用发布、白名单和监听器，确认电脑与桌面端在线。
+- **提示协议不支持**：桌面端已经回应，但桥不认识返回的会话状态协议。日志会记录检测到的版本；这条消息未投递，不用反复重启或换绑。先检查桥有没有兼容更新，确认支持后再发送。
+- **飞书有回复但会话打不开**：收发和界面显示是两件事。先保留原绑定和历史，按时间核对桌面日志；不要用清空会话来试错。
 
-```bash
-npm ci --ignore-scripts --no-audit --no-fund
-npm run check
-npm test
-npm run preflight
-npm run install-startup
-npm run health -- --require-clean --wait-seconds=60
-```
+v0.13.4 继续支持已验证的会话状态快照协议 **11 和 13**。未知版本不会被当成会话离线，也不会触发重复激活、投递或绕过桌面端。详细变化见 [CHANGELOG](CHANGELOG.md)。
 
-发布包验证通过，不等于接收电脑已经验收通过。每台电脑仍需完成一次真实私聊往返；按实际需要分别验收附件、文档/任务/妙记读回、FIFO、中断恢复和物理重启。
-
-## 功能范围
-
-包含：
-
-- 私聊文字、图片和文件输入；
-- 精确线程绑定；
-- 去重、FIFO 和精确轮次关联；
-- 固定总控未激活时的有界恢复；
-- Windows 隐藏启动与 macOS LaunchAgent 登录自启；
-- 单消费者健康检查和脱敏诊断；
-- 新安装、保留配置升级和可恢复修复。
-
-不包含：
-
-- 群聊路由；
-- 飞书 IM 原始语音识别；
-- 按语义选择任务；
-- 远程任务系统；
-- 确认码、任务码；
-- Bridge 内部的第二个思考智能体。
-
-## 当前版本
-
-当前版本：**v0.13.3**。准确变更和验证证据见 [更新日志](CHANGELOG.md) 与 Release 附件。
-
-本项目与字节跳动、飞书/Lark 或 OpenAI 不存在隶属、联合或官方背书关系。
-
-## 许可证
-
-本项目使用 MIT License。参见 [LICENSE](LICENSE) 和 [第三方声明](THIRD_PARTY_NOTICES.md)。
+本项目是非官方集成，无飞书、Lark 或 OpenAI 官方背书。采用 [MIT 许可证](LICENSE)，依赖见 [第三方声明](THIRD_PARTY_NOTICES.md)。

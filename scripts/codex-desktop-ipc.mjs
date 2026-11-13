@@ -29,6 +29,9 @@ const RETRYABLE_ACTIVATION_CODES = new Set([
   "desktop_ipc_request_timeout",
 ]);
 
+const SUPPORTED_OWNER_SNAPSHOT_VERSIONS = new Set([11, 13]);
+export const UNSUPPORTED_OWNER_SNAPSHOT = "desktop_ipc_owner_snapshot_unsupported";
+
 export class CodexDesktopIpcError extends Error {
   constructor(code, message, options = {}) {
     super(message, options.cause ? { cause: options.cause } : undefined);
@@ -256,6 +259,7 @@ export async function verifyCodexDesktopThreadActivation(options = {}) {
       };
     } catch (error) {
       lastError = error;
+      if (error?.code === UNSUPPORTED_OWNER_SNAPSHOT) throw error;
       if (
         !(error instanceof CodexDesktopIpcError) ||
         !RETRYABLE_ACTIVATION_CODES.has(error.code)
@@ -590,7 +594,6 @@ export class CodexDesktopIpcClient {
     const snapshotPromise = this.#waitForBroadcast(
       (message) =>
         message?.method === "thread-stream-state-changed" &&
-        (message?.version === 11 || message?.version === 13) &&
         message?.params?.conversationId === conversationId &&
         message?.params?.hostId === hostId &&
         message?.params?.change?.type === "snapshot",
@@ -624,6 +627,14 @@ export class CodexDesktopIpcClient {
         "desktop_ipc_no_owner",
         "Codex Desktop task owner did not return a state snapshot",
         { cause: error, delivery: "not_dispatched" },
+      );
+    }
+    if (!SUPPORTED_OWNER_SNAPSHOT_VERSIONS.has(snapshot.version)) {
+      const version = Number.isSafeInteger(snapshot.version) ? snapshot.version : null;
+      throw new CodexDesktopIpcError(
+        UNSUPPORTED_OWNER_SNAPSHOT,
+        `Unsupported Desktop owner snapshot protocol: ${version ?? "invalid version"} (supported: 11, 13)`,
+        { delivery: "not_dispatched", details: { snapshotVersion: version } },
       );
     }
     const ownerClientId = String(snapshot?.sourceClientId || "").trim();
@@ -882,6 +893,7 @@ export async function startCodexDesktopThreadTurn(options = {}) {
         timeoutMs: options.ownerSnapshotTimeoutMs || 5000,
       });
     } catch (error) {
+      if (error?.code === UNSUPPORTED_OWNER_SNAPSHOT) throw error;
       if (
         error instanceof CodexDesktopIpcError &&
         error.delivery === "not_dispatched"

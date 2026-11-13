@@ -13,7 +13,7 @@ import {
   verifyFixedControllerTarget,
   waitForFixedControllerTurn,
 } from "./fixed-controller-relay.mjs";
-import { CodexDesktopIpcError } from "./codex-desktop-ipc.mjs";
+import { CodexDesktopIpcError, UNSUPPORTED_OWNER_SNAPSHOT } from "./codex-desktop-ipc.mjs";
 
 const THREAD_ID = "00000000-0000-4000-8000-000000000011";
 const CWD = "C:\\Bridge\\workspace";
@@ -52,6 +52,42 @@ class FakeAppServer {
     throw new Error(`unexpected method: ${method}`);
   }
 }
+
+test("unsupported Desktop snapshot neither activates nor falls back to App Server", async () => {
+  for (const duringActivation of [false, true]) {
+    const appServer = new FakeAppServer({ reads: [thread("idle")] });
+    const protocolError = new CodexDesktopIpcError(
+      UNSUPPORTED_OWNER_SNAPSHOT, "Unsupported snapshot",
+      { details: { snapshotVersion: 14 } },
+    );
+    let starts = 0;
+    let activations = 0;
+    await assert.rejects(startFixedControllerTurnPreferDesktop(appServer, {
+      threadId: THREAD_ID,
+      expectedCwd: CWD,
+      input: "测试",
+      allowHeadlessFallback: true,
+      startDesktopTurn: async () => {
+        starts += 1;
+        throw duringActivation
+          ? new CodexDesktopIpcError("desktop_ipc_no_owner", "No owner")
+          : protocolError;
+      },
+      activateDesktopThread: async () => {
+        activations += 1;
+        throw protocolError;
+      },
+    }), (error) => {
+      assert.equal(error.code, UNSUPPORTED_OWNER_SNAPSHOT);
+      assert.equal(error.details.snapshotVersion, 14);
+      assert.equal(error.details.delivery, "not_dispatched");
+      return true;
+    });
+    assert.equal(starts, 1);
+    assert.equal(activations, duringActivation ? 1 : 0);
+    assert.deepEqual(appServer.calls.map(({ method }) => method), ["thread/read"]);
+  }
+});
 
 test("starts the dedicated fixed-controller App Server with unattended full access", () => {
   assert.deepEqual(buildFixedControllerAppServerArgs(), [

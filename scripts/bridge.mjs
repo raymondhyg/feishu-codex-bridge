@@ -40,6 +40,7 @@ import {
   getCodexCliVersion,
   resolveCodexCli,
 } from "./codex-app-server.mjs";
+import { UNSUPPORTED_OWNER_SNAPSHOT } from "./codex-desktop-ipc.mjs";
 import {
   buildFixedControllerAppServerArgs,
   buildFixedControllerAttachmentInput,
@@ -52,7 +53,7 @@ import {
 } from "./fixed-controller-relay.mjs";
 
 const scriptDirectory = path.dirname(fileURLToPath(import.meta.url));
-const BRIDGE_VERSION = "0.13.3";
+const BRIDGE_VERSION = "0.13.4";
 const RELAY_MODE = "fixed-controller-only";
 const FIXED_CONTROLLER_QUEUE_KEY = "__fixed_controller__";
 const START_RECONCILE_TIMEOUT_MS = 60_000;
@@ -1101,16 +1102,25 @@ async function main() {
       await handleRelay(routed);
     } catch (error) {
       const receipt = failureReceipt(messageId, `relay:${routed.kind}`);
+      const protocolMismatch = error?.code === UNSUPPORTED_OWNER_SNAPSHOT;
+      const snapshotVersion = Number.isSafeInteger(error?.details?.snapshotVersion)
+        ? error.details.snapshotVersion
+        : null;
       await log("error", "message_processing_failed", {
         messageId,
         receipt,
+        ...(protocolMismatch ? { code: UNSUPPORTED_OWNER_SNAPSHOT, snapshotVersion } : {}),
         error: sanitizeBridgeDiagnostic(error?.message || error),
       });
       try {
         const failureText = [
-          "这次没有成功转给本地总控，不能报告为已处理。",
+          protocolMismatch
+            ? `本地 Codex 已回应，但桥不支持它返回的会话状态协议（${snapshotVersion ?? "版本无效"}）。这条消息未投递，不需要重启或换绑会话。`
+            : "这次没有成功转给本地总控，不能报告为已处理。",
           `证据编号：${receipt}`,
-          "我已经保留故障记录，请在本地 Codex 核对后再试。",
+          protocolMismatch
+            ? "请检查飞书桥是否有兼容更新，确认支持后再发送。"
+            : "我已经保留故障记录，请在本地 Codex 核对后再试。",
         ].join("\n");
         const failedRecord = state.pendingFixedRelays[messageId];
         if (routed.kind === "fixed-controller-relay" && failedRecord) {

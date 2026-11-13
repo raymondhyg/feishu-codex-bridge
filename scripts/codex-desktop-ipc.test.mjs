@@ -13,6 +13,8 @@ import {
   isCodexDesktopConversationIdle,
   openCodexDesktopThreadDeepLink,
   startCodexDesktopThreadTurn,
+  UNSUPPORTED_OWNER_SNAPSHOT,
+  verifyCodexDesktopThreadActivation,
 } from "./codex-desktop-ipc.mjs";
 
 class FakeSocket extends EventEmitter {
@@ -58,7 +60,9 @@ class FakeSocket extends EventEmitter {
           method: "thread-stream-state-changed",
           sourceClientId: ownerClientId,
           targetClientIds: ["bridge-client"],
-          version: this.snapshotVersion,
+          version: typeof this.snapshotVersion === "function"
+            ? this.snapshotVersion(this.followCount)
+            : this.snapshotVersion,
           params: {
             conversationId: request.params.conversationId,
             hostId: request.params.hostId,
@@ -113,6 +117,42 @@ test("accepts Desktop owner snapshots on wire versions 11 and 13", async () => {
       client.close();
     }
   }
+});
+
+test("an unknown snapshot version on either owner check blocks the turn write", async () => {
+  for (const unknownAt of [1, 2]) {
+    const socket = new FakeSocket(
+      (request) => response(request, { clientId: "bridge-client" }),
+      { snapshotVersion: (attempt) => attempt === unknownAt ? 14 : 13 },
+    );
+    await assert.rejects(startCodexDesktopThreadTurn({
+      threadId: "00000000-0000-4000-8000-000000000011",
+      ownerSnapshotTimeoutMs: 100,
+      ipcOptions: { createConnection: () => socket },
+      beforeDeliveryWrite: () => assert.fail("must not enter dispatch"),
+    }), (error) => {
+      assert.equal(error.code, UNSUPPORTED_OWNER_SNAPSHOT);
+      assert.equal(error.delivery, "not_dispatched");
+      assert.equal(error.details.snapshotVersion, 14);
+      return true;
+    });
+    assert.equal(socket.followCount, unknownAt);
+    assert.deepEqual(socket.requests.map(({ method }) => method), ["initialize"]);
+  }
+});
+
+test("activation verification does not poll again after a protocol mismatch", async () => {
+  const socket = new FakeSocket(
+    (request) => response(request, { clientId: "bridge-client" }),
+    { snapshotVersion: 14 },
+  );
+  await assert.rejects(verifyCodexDesktopThreadActivation({
+    threadId: "00000000-0000-4000-8000-000000000011",
+    ownerSnapshotTimeoutMs: 100,
+    ipcOptions: { createConnection: () => socket },
+    sleep: () => assert.fail("must not retry an unsupported protocol"),
+  }), { code: UNSUPPORTED_OWNER_SNAPSHOT, details: { snapshotVersion: 14 } });
+  assert.equal(socket.followCount, 1);
 });
 
 test("builds only the exact fixed-controller deep link", () => {

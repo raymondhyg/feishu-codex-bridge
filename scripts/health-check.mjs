@@ -8,7 +8,7 @@ import { fileURLToPath } from "node:url";
 
 import { bridgeProcessIdentity } from "./bridge-service.mjs";
 
-const EXPECTED_BRIDGE_VERSION = "0.13.3";
+const EXPECTED_BRIDGE_VERSION = "0.13.4";
 const EXPECTED_STATE_SCHEMA = 6;
 const EVENT_KEY = "im.message.receive_v1";
 const runtimeDirectory = path.join(

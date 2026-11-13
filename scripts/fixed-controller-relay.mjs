@@ -4,6 +4,7 @@ import {
   activateCodexDesktopThread,
   CodexDesktopIpcError,
   startCodexDesktopThreadTurn,
+  UNSUPPORTED_OWNER_SNAPSHOT,
   verifyCodexDesktopThreadActivation,
 } from "./codex-desktop-ipc.mjs";
 
@@ -463,6 +464,7 @@ export async function startFixedControllerVisibleTurn(
         );
       }
       if (
+        error.code === UNSUPPORTED_OWNER_SNAPSHOT ||
         error.code === "desktop_recovery_state_persist_failed" ||
         error.code === "desktop_turn_recovery_limit_reached"
       ) {
@@ -642,6 +644,20 @@ export async function startFixedControllerVisibleTurn(
       } catch (observerError) {
         failureObserverCode = String(
           observerError?.code || "observer_failed",
+        );
+      }
+      if (activationError?.code === UNSUPPORTED_OWNER_SNAPSHOT) {
+        throw new FixedControllerRelayError(
+          UNSUPPORTED_OWNER_SNAPSHOT,
+          activationError.message,
+          {
+            cause: activationError,
+            details: diagnostics(activationError, {
+              ...activationError.details,
+              activationVerificationResumed: resumed,
+              ...(failureObserverCode ? { failureObserverCode } : {}),
+            }),
+          },
         );
       }
       throw new FixedControllerRelayError(

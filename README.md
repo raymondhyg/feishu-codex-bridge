@@ -6,6 +6,8 @@
 
 ## 从零开始
 
+**最快入口：** 把官方便携 ZIP 拖进目标电脑的本地 Codex 桌面会话，说 **「帮我安装」**。Codex 按 [安装首读](README-FIRST.md) 检查系统、依赖和旧安装；需要你登录、授权、选会话或用手机验收时会提示你。下面也保留手动操作路线。
+
 ### 1. 准备电脑和飞书应用
 
 - 电脑：Windows 10/11 或 macOS，安装并登录 ChatGPT/Codex Desktop，准备 Node.js 22 和 `lark-cli`。
@@ -16,14 +18,14 @@
 
 ### 2. 下载、校验并安装
 
-到 [v0.13.4 Release](https://github.com/raymondhyg/feishu-codex-bridge/releases/tag/v0.13.4) 下载 `feishu-codex-bridge-v0.13.4-portable.zip` 和同名 `.sha256`。Windows 和 Mac 下载的是**同一个 ZIP**，不需要另找平台包。不要选 GitHub 自动生成的 Source code ZIP。
+到 [v0.13.5 Release](https://github.com/raymondhyg/feishu-codex-bridge/releases/tag/v0.13.5) 下载 `feishu-codex-bridge-v0.13.5-portable.zip` 和同名 `.sha256`。Windows 和 Mac 下载的是**同一个 ZIP**，不需要另找平台包。不要选 GitHub 自动生成的 Source code ZIP。
 
 在下载目录校验，确认结果和 `.sha256` 里的值一致，再解压到准备长期保留的目录：
 
 | 系统 | 校验命令 | 安装入口 |
 | --- | --- | --- |
-| Windows | `Get-FileHash .\feishu-codex-bridge-v0.13.4-portable.zip -Algorithm SHA256` | [Windows 部署指南](references/new-computer-deployment-guide.md) |
-| macOS | `shasum -a 256 -c feishu-codex-bridge-v0.13.4-portable.zip.sha256` | [macOS 部署指南](references/macos-deployment-guide.md) |
+| Windows | `Get-FileHash .\feishu-codex-bridge-v0.13.5-portable.zip -Algorithm SHA256` | [Windows 部署指南](references/new-computer-deployment-guide.md) |
+| macOS | `shasum -a 256 -c feishu-codex-bridge-v0.13.5-portable.zip.sha256` | [macOS 部署指南](references/macos-deployment-guide.md) |
 
 详细命令见 [安装首读](README-FIRST.md) 和对应系统指南。按指南在解压包的 `scripts` 目录完成依赖安装、私有绑定、预检和登录自启。不要把另一台电脑的私有配置直接复制过来。
 
@@ -48,6 +50,6 @@
 - **提示协议不支持**：桌面端已经回应，但桥不认识返回的会话状态协议。日志会记录检测到的版本；这条消息未投递，不用反复重启或换绑。先检查桥有没有兼容更新，确认支持后再发送。
 - **飞书有回复但会话打不开**：收发和界面显示是两件事。先保留原绑定和历史，按时间核对桌面日志；不要用清空会话来试错。
 
-v0.13.4 继续支持已验证的会话状态快照协议 **11 和 13**。未知版本不会被当成会话离线，也不会触发重复激活、投递或绕过桌面端。详细变化见 [CHANGELOG](CHANGELOG.md)。
+v0.13.5 继续支持已验证的会话状态快照协议 **11 和 13**。未知版本不会被当成会话离线，也不会触发重复激活、投递或绕过桌面端。详细变化见 [CHANGELOG](CHANGELOG.md)。
 
 本项目是非官方集成，无飞书、Lark 或 OpenAI 官方背书。采用 [MIT 许可证](LICENSE)，依赖见 [第三方声明](THIRD_PARTY_NOTICES.md)。

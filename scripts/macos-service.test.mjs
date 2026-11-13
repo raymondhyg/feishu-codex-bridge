@@ -11,7 +11,7 @@ import { readReadyRecord } from "./health-check.mjs";
 test("health finds the latest readiness record for the live PID beyond 200 log lines", async () => {
   const dir = await mkdtemp(path.join(tmpdir(), "bridge-health-"));
   const log = path.join(dir, "bridge.log.jsonl");
-  const ready = { event: "listener_ready", bridgePid: 123, bridgeVersion: "0.13.4" };
+  const ready = { event: "listener_ready", bridgePid: 123, bridgeVersion: "0.13.5" };
   try {
     await writeFile(log, [
       JSON.stringify({ ...ready, bridgeVersion: "older" }),
